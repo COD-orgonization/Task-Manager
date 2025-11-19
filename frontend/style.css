@@ -1,0 +1,487 @@
+﻿/* БАЗОВЫЕ СТИЛИ ДЛЯ ТЕЛЕФОНА */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    font-family: 'Ubuntu', 'Open Sans', sans-serif;
+    background-color: #f8f9fa;
+    color: #000000;
+    line-height: 1.4;
+    font-size: 16px;
+    height: 100vh;
+    overflow-x: hidden;
+    touch-action: manipulation;
+}
+
+/* ОБЩИЕ СТИЛИ СТРАНИЦ */
+.page {
+    display: none;
+    padding: 16px;
+    max-width: 100%;
+    margin: 0 auto;
+    min-height: 100vh;
+    overflow-y: auto;
+}
+
+.page.active {
+    display: block;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ЗАГОЛОВКИ СТРАНИЦ */
+header {
+    margin-bottom: 24px;
+    text-align: center;
+    padding: 8px 0;
+}
+
+h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+/* РАЗДЕЛИТЕЛЬ */
+hr {
+    border: none;
+    height: 1px;
+    background-color: #e0e0e0;
+    margin: 20px 0;
+}
+
+/* ИКОНКИ */
+.icon {
+    width: 24px;
+    height: 24px;
+}
+
+/* ЭКРАН 1: ГЛАВНАЯ */
+.message {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.message p {
+    margin-bottom: 24px;
+    font-size: 16px;
+    color: #666;
+}
+
+.message button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 16px;
+    min-height: 44px;
+}
+
+/* СПИСОК ДОСОК */
+.board-list {
+    list-style: none;
+}
+
+.board-list li {
+    padding: 18px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    cursor: pointer;
+    min-height: 60px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.board-name {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 6px;
+    font-size: 17px;
+    color: #1a1a1a;
+}
+
+.participants {
+    font-size: 14px;
+    color: #666;
+}
+
+/* КНОПКА СОЗДАНИЯ ДОСКИ */
+.create-board-button {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    cursor: pointer;
+    padding: 18px 16px;
+    width: 100%;
+    text-align: left;
+    font-size: 16px;
+    color: #666;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: 12px;
+    margin-top: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.create-board-button:active {
+    background-color: #f8f9fa;
+}
+
+/* ЭКРАН 2: СОЗДАНИЕ ДОСКИ */
+.header-with-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 8px 0;
+}
+
+.header-with-actions h1 {
+    margin: 0;
+    font-size: 20px;
+}
+
+/* КНОПКИ В ШАПКЕ */
+.back-button, .save-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 12px;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* ФОРМА СОЗДАНИЯ ДОСКИ */
+.create-form {
+    margin-top: 20px;
+}
+
+.create-form strong {
+    display: block;
+    margin-bottom: 12px;
+    font-weight: 600;
+    font-size: 17px;
+    color: #1a1a1a;
+}
+
+.create-form textarea {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 16px;
+    font-family: inherit;
+    margin-bottom: 20px;
+    resize: none;
+    min-height: 52px;
+    background-color: #ffffff;
+}
+
+.create-form textarea:focus {
+    outline: none;
+    border-color: #007AFF;
+    background-color: #ffffff;
+}
+
+/* ЭКРАН 3: НАСТРОЙКИ */
+.settings-group {
+    margin-bottom: 24px;
+}
+
+.settings-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1a1a1a;
+}
+
+.settings-item {
+    margin-bottom: 16px;
+}
+
+/* КРАСИВЫЕ ПОЛЯ ВВОДА В НАСТРОЙКАХ */
+.form-input, .form-textarea {
+    width: 100%;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 16px;
+    font-family: inherit;
+    background-color: #ffffff;
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+}
+
+.form-input {
+    min-height: 52px;
+    font-weight: 600;
+    font-size: 17px;
+}
+
+.form-textarea {
+    min-height: 100px;
+    resize: none;
+    line-height: 1.5;
+}
+
+.form-input:focus, .form-textarea:focus {
+    outline: none;
+    border-color: #007AFF;
+    background-color: #ffffff;
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+}
+
+/* ДИЗАЙН ДЛЯ ПОЛЕЙ В НАСТРОЙКАХ */
+.settings-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 16px;
+    color: #1a1a1a;
+}
+
+/* СПИСОК РАЗДЕЛОВ В НАСТРОЙКАХ */
+.sections-list {
+    list-style: none;
+    margin-bottom: 20px;
+}
+
+.section-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 44px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.section-item:focus-within {
+    border-color: #007AFF;
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+}
+
+.section-input {
+    flex: 1;
+    border: none;
+    font-size: 16px;
+    padding: 8px 0;
+    background: none;
+    min-height: 24px;
+    color: #1a1a1a;
+    font-weight: 500;
+}
+
+.section-input:focus {
+    outline: none;
+}
+
+/* КНОПКА УДАЛЕНИЯ РАЗДЕЛА */
+.delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: #ff3b30;
+    padding: 8px;
+    margin-left: 12px;
+    min-height: 44px;
+    min-width: 44px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.delete-button:active {
+    background-color: rgba(255, 59, 48, 0.1);
+}
+
+/* КНОПКА ДОБАВЛЕНИЯ РАЗДЕЛА */
+.add-section-button {
+    background: #ffffff;
+    border: 1px solid #e0e0e0;
+    cursor: pointer;
+    font-size: 16px;
+    color: #007AFF;
+    padding: 16px;
+    width: 100%;
+    text-align: left;
+    min-height: 44px;
+    border-radius: 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.add-section-button:active {
+    background-color: #f8f9fa;
+    border-color: #007AFF;
+}
+
+/* ЭКРАН 4: ПРОСМОТР ДОСКИ */
+.board-section {
+    margin-bottom: 24px;
+}
+
+/* ЗАГОЛОВОК РАЗДЕЛА С КНОПКОЙ В ОДНОЙ ЛИНИИ */
+.section-title-with-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1;
+    color: #1a1a1a;
+}
+
+/* КНОПКА ДОБАВЛЕНИЯ ЗАДАЧИ В ЭКРАНЕ 4 */
+.section-title-with-button .add-task-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* КОНТЕЙНЕР ЗАДАЧ */
+.tasks-container {
+    margin-bottom: 16px;
+}
+
+/* ЭЛЕМЕНТ ЗАДАЧИ */
+.task-item {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-bottom: 1px solid #f8f8f8;
+    min-height: 44px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.task-item:focus-within {
+    border-color: #007AFF;
+    box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+}
+
+.task-input {
+    flex: 1;
+    border: none;
+    font-size: 16px;
+    padding: 8px 0;
+    background: none;
+    min-height: 24px;
+    color: #1a1a1a;
+}
+
+.task-input:focus {
+    outline: none;
+    background-color: #f8f9fa;
+}
+
+/* КНОПКА УДАЛЕНИЯ ЗАДАЧИ */
+.delete-task-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    color: #ff3b30;
+    padding: 8px;
+    margin-left: 12px;
+    min-height: 44px;
+    min-width: 44px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.delete-task-button:active {
+    background-color: rgba(255, 59, 48, 0.1);
+}
+
+/* ШАПКА ЭКРАНА 4 */
+.setting-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 12px;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* ОПТИМИЗАЦИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ */
+@media (max-width: 480px) {
+    .page {
+        padding: 16px;
+    }
+    
+    h1 {
+        font-size: 20px;
+    }
+    
+    .create-form textarea {
+        font-size: 16px;
+        padding: 14px;
+    }
+}
+
+/* ПРЕДОТВРАЩЕНИЕ ZOOM ПРИ ФОКУСЕ НА IOS */
+@media (max-width: 768px) {
+    input, textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* СТИЛИ ДЛЯ СОСТОЯНИЙ */
+button:active {
+    opacity: 0.7;
+    transform: scale(0.98);
+}
+
+input:focus, textarea:focus {
+    background-color: #f8f9fa;
+}
+
+/* ОТКЛЮЧЕНИЕ ВЫДЕЛЕНИЯ */
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* ЛИСТАНИЕ ДЛЯ МОБИЛЬНЫХ */
+.page::-webkit-scrollbar {
+    width: 0;
+    background: transparent;
+}

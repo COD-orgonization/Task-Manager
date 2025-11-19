@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Менеджер Досок</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <script src="../Backend/DB/main.py" type="text/python" defer></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <!-- ЭКРАН 1: Главная страница -->
+    <div id="home-page" class="page active">
+        <header>
+            <h1>Главная</h1>
+        </header>
+        
+        <main>
+            <!-- Досок нет -->
+            <div id="no-boards-message" class="message">
+                <p>У вас пока нет досок.</p>
+                <button onclick="showPage('create-page')">
+                    <img src="img/plus.png" alt="Создать" class="icon">
+                </button>
+            </div>
+            
+            <!-- Доски есть -->
+            <div id="boards-list" class="hidden">
+                <ul class="board-list"></ul>
+                
+                <button class="create-board-button" onclick="showPage('create-page')">
+                    <img src="img/plus.png" alt="Создать" class="icon">
+                    <span>Создать доску</span>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- ЭКРАН 2: Страница создания доски -->
+    <div id="create-page" class="page">
+        <header class="header-with-actions">
+            <button class="back-button" onclick="showPage('home-page')">
+                <img src="img/back.png" alt="Назад" class="icon">
+            </button>
+            
+            <h1>Создание доски</h1>
+            
+            <button class="save-button" onclick="createNewBoard()">
+                <img src="img/ok.png" alt="Сохранить" class="icon">
+            </button>
+        </header>
+        
+        <main>
+            <form class="create-form">
+                <strong>Название</strong>
+                <textarea id="board-name" placeholder="введите название..."></textarea>
+            
+                <strong>Описание</strong>
+                <textarea id="board-description" placeholder="введите описание..."></textarea>
+            </form>
+        </main>
+    </div>
+
+    <!-- ЭКРАН 3: Страница настроек доски -->
+    <div id="settings-page" class="page">
+        <header class="header-with-actions">
+            <button class="back-button" onclick="showPage('board-page')">
+                <img src="img/back.png" alt="Назад" class="icon">
+            </button>
+            
+            <h1>Настройки</h1>
+            
+            <button class="save-button" onclick="saveBoardSettings()">
+                <img src="img/ok.png" alt="Сохранить" class="icon">
+            </button>
+        </header>
+        
+        <main class="page-content">
+            <div class="settings-group">
+                <div class="settings-item">
+                    <label class="settings-label">Название доски</label>
+                    <input type="text" class="form-input" value="Доска 1">
+                </div>
+                
+                <div class="settings-item">
+                    <label class="settings-label">Описание доски</label>
+                    <textarea class="form-textarea">Тут описание</textarea>
+                </div>
+            </div>
+            
+            <div class="settings-group">
+                <h2 class="settings-title">Разделы</h2>
+                
+                <ul class="sections-list" id="sections-list">
+                    <li class="section-item">
+                        <input type="text" class="section-input" value="Раздел 1">
+                        <button class="delete-button" onclick="deleteSection(this)">⨯</button>
+                    </li>
+                    
+                    <li class="section-item">
+                        <input type="text" class="section-input" value="Раздел 2">
+                        <button class="delete-button" onclick="deleteSection(this)">⨯</button>
+                    </li>
+                </ul>
+                
+                <button class="add-section-button" onclick="addNewSection()">
+                    + Добавить раздел
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- ЭКРАН 4: Страница просмотра доски -->
+    <div id="board-page" class="page">
+        <header class="header-with-actions">
+            <button class="back-button" onclick="showPage('home-page')">
+                <img src="img/back.png" alt="Назад" class="icon">
+            </button>
+            
+            <h1>Доска 1</h1>
+            
+            <button class="setting-button" onclick="showPage('settings-page')">
+                <img src="img/sertting.png" alt="Настройки" class="icon">
+            </button>
+        </header>
+        
+        <main class="page-content">
+            <!-- Раздел 1 -->
+            <div class="board-section">
+                <div class="section-title-with-button">
+                    <h3 class="section-title">Раздел 1</h3>
+                    <button class="add-task-button" onclick="addTask(this)">
+                        <img src="img/plus2.png" alt="Добавить" class="icon">
+                    </button>
+                </div>
+                
+                <div class="tasks-container">
+                    <div class="task-item">
+                        <input type="text" class="task-input" value="Задача 1" onblur="saveTask(this)">
+                        <button class="delete-task-button" onclick="deleteTask(this)">⨯</button>
+                    </div>
+                    <div class="task-item">
+                        <input type="text" class="task-input" value="Задача 2" onblur="saveTask(this)">
+                        <button class="delete-task-button" onclick="deleteTask(this)">⨯</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Раздел 2 -->
+            <div class="board-section">
+                <div class="section-title-with-button">
+                    <h3 class="section-title">Раздел 2</h3>
+                    <button class="add-task-button" onclick="addTask(this)">
+                        <img src="img/plus2.png" alt="Добавить" class="icon">
+                    </button>
+                </div>
+                
+                <div class="tasks-container">
+                    <div class="task-item">
+                        <input type="text" class="task-input" value="Задача 1" onblur="saveTask(this)">
+                        <button class="delete-task-button" onclick="deleteTask(this)">⨯</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
