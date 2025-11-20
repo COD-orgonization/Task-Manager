@@ -498,7 +498,22 @@ if __name__ == "__main__":
         
         # Создание задачи
         task_id = base.create_task(board1_id, "Implement feature", "Create new functionality", "in-progress")
-
+        
+        # Тестирование работы с секциями
+        base.create_section(board1_id, "todo")
+        base.create_section(board1_id, "in-progress")
+        base.create_section(board1_id, "done")
+        
+        # Получение секций доски
+        sections = base.get_all_sections_board(board1_id)
+        print(f"Board sections: {sections}")
+        
+        # Обновление секции
+        base.update_section(board1_id, "todo", "backlog")
+        
+        # Получение обновленных секций
+        sections_updated = base.get_all_sections_board(board1_id)
+        print(f"Updated board sections: {sections_updated}")
     
     # Получение досок пользователя
     user_boards = base.get_all_boards_user("0")
@@ -506,3 +521,9 @@ if __name__ == "__main__":
     
     user_boards = base.get_all_boards_user("1")
     print(f"User 1 boards: {user_boards}")
+    
+    # Тестирование удаления секции
+    if board2_id:
+        base.create_section(board2_id, "test-section")
+        base.delete_section("test-section")
+        print("Section deletion tested")
