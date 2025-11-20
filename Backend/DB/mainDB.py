@@ -149,7 +149,7 @@ class DataBase:
             
             # Создаем доску
             self.cursor.execute('''
-                INSERT INTO Boards (id, title, description, section) VALUES (?, ?, ?)
+                INSERT INTO Boards (id, title, description) VALUES (?, ?, ?)
             ''', (board_id, title, description,))
             
             # Связываем пользователя с доской
@@ -219,7 +219,7 @@ class DataBase:
     def get_all_boards_user(self, user_id: str) -> List[Tuple]:
         try:
             self.cursor.execute('''
-                SELECT b.id, b.title, b.description, b.section 
+                SELECT b.id, b.title, b.description 
                 FROM Boards b
                 JOIN UserBoards ub ON b.id = ub.idBoard
                 WHERE ub.idUsers = ?
@@ -251,20 +251,113 @@ class DataBase:
             return []
 
     # ============= Секции ===================
-    def get_all_sections_board(self, board_id : str) -> List[Tuple]:
-        pass
+    def get_all_sections_board(self, board_id: str) -> List[Tuple]:
+        """Получить все секции для указанной доски"""
+        try:
+            self.cursor.execute('''
+                SELECT sectionTitle 
+                FROM SectionBoards 
+                WHERE idBoard = ?
+            ''', (board_id,))
 
-    def create_section(self, board_id : str, title : str) -> bool:
-        pass
+            return self.cursor.fetchall()
+        except sqlite3.Error:
+            return []
 
-    def update_section(self, board_id : str, oldTitle : str, newTitle)  -> bool:
-        pass
+    def create_section(self, board_id: str, title: str) -> bool:
+        """Создать секцию и связать ее с доской"""
+        try:
+            # Сначала добавляем секцию в таблицу Sections, если ее еще нет
+            self.cursor.execute('''
+                INSERT OR IGNORE INTO Sections (title) VALUES (?)
+            ''', (title,))
+            
+            # Связываем секцию с доской
+            self.cursor.execute('''
+                INSERT INTO SectionBoards (sectionTitle, idBoard) VALUES (?, ?)
+            ''', (title, board_id))
+            
+            self.connection.commit()
+            return True
+        except sqlite3.Error:
+            self.connection.rollback()
+            return False
 
-    def delete_section(self, title : str) -> bool:
-        pass
+    def update_section(self, board_id: str, oldTitle: str, newTitle: str) -> bool:
+        """Обновить название секции на доске"""
+        try:
+            # Сначала добавляем новую секцию, если ее нет
+            self.cursor.execute('''
+                INSERT OR IGNORE INTO Sections (title) VALUES (?)
+            ''', (newTitle,))
+            
+            # Обновляем связь секции с доской
+            self.cursor.execute('''
+                UPDATE SectionBoards 
+                SET sectionTitle = ? 
+                WHERE idBoard = ? AND sectionTitle = ?
+            ''', (newTitle, board_id, oldTitle))
+            
+            # Обновляем статусы задач, которые ссылались на старую секцию
+            self.cursor.execute('''
+                UPDATE Tasks 
+                SET status = ? 
+                WHERE status = ? AND id IN (
+                    SELECT bt.idTask 
+                    FROM BorderTasks bt 
+                    WHERE bt.idBoard = ?
+                )
+            ''', (newTitle, oldTitle, board_id))
+            
+            # Удаляем старую секцию, если она больше нигде не используется
+            self.cursor.execute('''
+                DELETE FROM Sections 
+                WHERE title = ? AND NOT EXISTS (
+                    SELECT 1 FROM SectionBoards WHERE sectionTitle = ?
+                )
+            ''', (oldTitle, oldTitle))
+            
+            self.connection.commit()
+            return True
+        except sqlite3.Error:
+            self.connection.rollback()
+            return False
+
+    def delete_section_from_board(self, board_id: str, title: str) -> bool:
+        """Удалить секцию с конкретной доски"""
+        try:
+            # Удаляем связь секции с доской
+            self.cursor.execute('''
+                DELETE FROM SectionBoards 
+                WHERE idBoard = ? AND sectionTitle = ?
+            ''', (board_id, title))
+            
+            # Удаляем саму секцию, если она больше нигде не используется
+            self.cursor.execute('''
+                DELETE FROM Sections 
+                WHERE title = ? AND NOT EXISTS (
+                    SELECT 1 FROM SectionBoards WHERE sectionTitle = ?
+                )
+            ''', (title, title))
+            
+            # Удаляем задачи, которые ссылались на эту секцию на этой доске
+            self.cursor.execute('''
+                Delete from Tasks 
+                WHERE status = ? AND id IN (
+                    SELECT bt.idTask 
+                    FROM BorderTasks bt 
+                    WHERE bt.idBoard = ?
+                )
+            ''', (title, board_id))
+            
+            self.connection.commit()
+            return True
+        except sqlite3.Error:
+            self.connection.rollback()
+            return False
 
     # ============= Задачи ===================
-    def create_task(self, board_id: str, title: str, description: str = "", status: str = "todo") -> Optional[str]:
+    def create_task(self, board_id: str, title: str, description: str, status: str) -> Optional[str]:
         try:
             task_id = uuid.uuid4().hex
             
