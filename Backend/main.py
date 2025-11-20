@@ -35,6 +35,9 @@ class TaskUpdate(BaseModel):
     description: Optional[str] = None
     status: Optional[str] = None
 
+class SectionCreate(BaseModel):
+    title: str
+
 # ==================== Пользователи ====================
 
 @app.post("/api/users/{user_id}")
@@ -108,6 +111,39 @@ def get_all_boards_user(user_id: str):
 def get_users_count_on_board(board_id: str):
     count = base.get_count_users_on_board(board_id)
     return {"board_id": board_id, "users_count": count}
+
+# ==================== Секции ====================
+@app.get("/api/boards/{board_id}/sections")
+def get_all_sections_board(board_id: str):
+    """Получить все секции для указанной доски"""
+    sections = base.get_all_sections_board(board_id)
+    return {
+        "sections": [section[0] for section in sections]
+    }
+
+@app.post("/api/boards/{board_id}/sections")
+def create_section(board_id: str, section_data: SectionCreate):
+    """Создать секцию и связать ее с доской"""
+    success = base.create_section(board_id, section_data.title)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to create section")
+    return {"message": "Section created successfully"}
+
+@app.put("/api/boards/{board_id}/sections/{old_title}")
+def update_section(board_id: str, old_title : str, section_data: SectionCreate):
+    """Обновить название секции на доске"""
+    success = base.update_section(board_id, old_title, section_data.title)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to update section")
+    return {"message": "Section updated successfully"}
+
+@app.delete("/api/boards/{board_id}/sections/{section_title}")
+def delete_section_from_board(board_id: str, section_title: str):
+    """Удалить секцию с конкретной доски"""
+    success = base.delete_section_from_board(board_id, section_title)
+    if not success:
+        raise HTTPException(status_code=400, detail="Failed to delete section")
+    return {"message": "Section deleted successfully"}
 
 # ==================== Задачи ====================
 
@@ -245,6 +281,12 @@ def root():
                 "get_user_boards": "GET /api/home/{user_id}",
                 "get_users_count": "GET /api/boards/{board_id}/users/count",
                 "get_tasks": "GET /api/board/{board_id}"
+            },
+            "sections": {
+                "get_all": "GET /api/boards/{board_id}/sections",
+                "create": "POST /api/boards/{board_id}/sections",
+                "update": "PUT /api/boards/{board_id}/sections",
+                "delete": "DELETE /api/boards/{board_id}/sections/{section_title}"
             },
             "tasks": {
                 "create": "POST /api/boards/{board_id}/tasks",
