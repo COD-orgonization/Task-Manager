@@ -43,8 +43,14 @@ class DataBase:
             CREATE TABLE IF NOT EXISTS Boards(
                     id TEXT PRIMARY KEY,
                     title TEXT NOT NULL,
-                    description TEXT,
-                    section TEXT
+                    description TEXT
+                )
+            ''')
+
+            # Создание таблицы секций
+            self.cursor.execute('''
+                CREATE TABLE IF NOT EXISTS Sections(
+                    title TEXT PRIMARY KEY
                 )
             ''')
             
@@ -55,7 +61,8 @@ class DataBase:
                     title TEXT NOT NULL,
                     description TEXT,
                     status TEXT,
-                    executor TEXT
+                    executor TEXT,
+                    FOREIGN KEY (status) REFERENCES Sections(title)
                 )
             ''')
             
@@ -65,6 +72,16 @@ class DataBase:
                     idUsers TEXT,
                     idBoard TEXT,
                     FOREIGN KEY (idUsers) REFERENCES Users(id),
+                    FOREIGN KEY (idBoard) REFERENCES Boards(id)
+                )
+            ''')
+
+            # Соединение секции и доски
+            self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS UserBoards(
+                    sectionTitle TEXT,
+                    idBoard TEXT,
+                    FOREIGN KEY (sectionTitle) REFERENCES Sections(title),
                     FOREIGN KEY (idBoard) REFERENCES Boards(id)
                 )
             ''')
