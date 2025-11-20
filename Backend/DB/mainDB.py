@@ -11,6 +11,9 @@ class DataBase:
         # Создаем директорию если не существует
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
         
+        # Включение поддержки внешних ключей
+        self.cursor.execute("PRAGMA foreign_keys = ON")
+
         self.connection = sqlite3.connect(db_path, check_same_thread=False)
         self.cursor = self.connection.cursor()
         
@@ -62,7 +65,7 @@ class DataBase:
                     description TEXT,
                     status TEXT,
                     executor TEXT,
-                    FOREIGN KEY (status) REFERENCES Sections(title)
+                    FOREIGN KEY (status) REFERENCES Sections(title) ON DELETE SET NULL
                 )
             ''')
             
@@ -71,18 +74,18 @@ class DataBase:
             CREATE TABLE IF NOT EXISTS UserBoards(
                     idUsers TEXT,
                     idBoard TEXT,
-                    FOREIGN KEY (idUsers) REFERENCES Users(id),
-                    FOREIGN KEY (idBoard) REFERENCES Boards(id)
+                    FOREIGN KEY (idUsers) REFERENCES Users(id) ON DELETE CASCADE,
+                    FOREIGN KEY (idBoard) REFERENCES Boards(id) ON DELETE CASCADE
                 )
             ''')
 
             # Соединение секции и доски
             self.cursor.execute('''
-            CREATE TABLE IF NOT EXISTS UserBoards(
+            CREATE TABLE IF NOT EXISTS SectionBoards(
                     sectionTitle TEXT,
                     idBoard TEXT,
-                    FOREIGN KEY (sectionTitle) REFERENCES Sections(title),
-                    FOREIGN KEY (idBoard) REFERENCES Boards(id)
+                    FOREIGN KEY (sectionTitle) REFERENCES Sections(title) ON DELETE CASCADE,
+                    FOREIGN KEY (idBoard) REFERENCES Boards(id) ON DELETE CASCADE
                 )
             ''')
             
@@ -91,8 +94,8 @@ class DataBase:
             CREATE TABLE IF NOT EXISTS BorderTasks(
                     idBoard TEXT,
                     idTask TEXT,
-                    FOREIGN KEY (idBoard) REFERENCES Boards(id),
-                    FOREIGN KEY (idTask) REFERENCES Tasks(id)
+                    FOREIGN KEY (idBoard) REFERENCES Boards(id) ON DELETE CASCADE,
+                    FOREIGN KEY (idTask) REFERENCES Tasks(id) ON DELETE CASCADE
                 )
             ''')
             
@@ -143,12 +146,11 @@ class DataBase:
     def create_board(self, user_id: str, title: str, description: str = "") -> Optional[str]:
         try:
             board_id = uuid.uuid4().hex
-            section = '["todo", "in-progress", "done"]'
             
             # Создаем доску
             self.cursor.execute('''
-                INSERT INTO Boards (id, title, description, section) VALUES (?, ?, ?, ?)
-            ''', (board_id, title, description, section,))
+                INSERT INTO Boards (id, title, description, section) VALUES (?, ?, ?)
+            ''', (board_id, title, description,))
             
             # Связываем пользователя с доской
             self.cursor.execute('''
@@ -164,15 +166,9 @@ class DataBase:
     def delete_board(self, board_id: str) -> bool:
         """Удаление доски и связанных данных"""
         try:
-            # Удаляем связи пользователей с доской
-            self.cursor.execute('DELETE FROM UserBoards WHERE idBoard = ?', (board_id,))
-            
             # Получаем задачи связанные с доской
             self.cursor.execute('SELECT idTask FROM BorderTasks WHERE idBoard = ?', (board_id,))
             task_ids = [row[0] for row in self.cursor.fetchall()]
-            
-            # Удаляем связи задач с доской
-            self.cursor.execute('DELETE FROM BorderTasks WHERE idBoard = ?', (board_id,))
             
             # Удаляем сами задачи
             if task_ids:
@@ -254,6 +250,19 @@ class DataBase:
         except sqlite3.Error:
             return []
 
+    # ============= Секции ===================
+    def get_all_sections_board(self, board_id : str) -> List[Tuple]:
+        pass
+
+    def create_section(self, board_id : str, title : str) -> bool:
+        pass
+
+    def update_section(self, board_id : str, oldTitle : str, newTitle)  -> bool:
+        pass
+
+    def delete_section(self, title : str) -> bool:
+        pass
+
     # ============= Задачи ===================
     def create_task(self, board_id: str, title: str, description: str = "", status: str = "todo") -> Optional[str]:
         try:
@@ -277,9 +286,6 @@ class DataBase:
 
     def remove_task(self, task_id: str) -> bool:
         try:
-            # Удаляем связь задачи с доской
-            self.cursor.execute('DELETE FROM BorderTasks WHERE idTask = ?', (task_id,))
-            
             # Удаляем саму задачу
             self.cursor.execute('DELETE FROM Tasks WHERE id = ?', (task_id,))
             
