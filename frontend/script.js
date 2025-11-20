@@ -128,6 +128,7 @@ async function openBoard(boardId, boardTitle) {
         const responseSection = await await fetch(`${API_BASE_URL}/board/${boardId}/sections`);
         data = await responseSection.json();
         const sections = data.data;
+        console.log(sections)
         
         // Обновляем заголовок страницы доски
         document.querySelector('#board-page h1').textContent = boardTitle;
@@ -145,7 +146,7 @@ async function openBoard(boardId, boardTitle) {
         });
         
         // Создаем разделы для каждого статуса
-        Object.keys(tasksByStatus).forEach(status => {
+        sections.forEach(status => {
             const section = createBoardSection(status, tasksByStatus[status], currentBoardId);
             pageContent.appendChild(section);
         });
@@ -286,6 +287,8 @@ function loadBoardSettings(board, sections) {
         `;
         sectionsList.appendChild(sectionItem);
     });
+
+    document.querySelector('.add-section-button').addEventListener('click', () => {addNewSection(board.id)});
 }
 
 // function saveBoardSettings() {
@@ -304,30 +307,39 @@ function loadBoardSettings(board, sections) {
 //     showPage('board-page');
 // }
 
-function addNewSection() {
-    const board = boards.find(b => b.id === currentBoardId);
-    if (!board) return;
+async function addNewSection(board_id) {
+    await fetch(`${API_BASE_URL}/board/${board_id}/sections`, {
+        method: 'POST',
+        headers: {
+            "Content-type": "application/json"
+        },
+        body: JSON.stringify({title: "Новая секция"})
+    });
     
-    const newSectionId = Date.now();
-    const newSection = {
-        id: newSectionId,
-        name: `Раздел ${board.sections.length + 1}`,
-        tasks: []
-    };
-    
-    board.sections.push(newSection);
-    
-    // Добавляем в UI
+    // // Добавляем в UI
     const sectionsList = document.getElementById('sections-list');
     const sectionItem = document.createElement('li');
     sectionItem.className = 'section-item';
     sectionItem.innerHTML = `
-        <input type="text" class="section-input" value="${newSection.name}" onchange="updateSectionName(${newSectionId}, this.value)">
-        <button class="delete-button" onclick="deleteSection(this, ${newSectionId})">⨯</button>
+        <input type="text" class="section-input" section-old="Новая секция" board-id="${board_id}" value="Новая секция" onchange="updateSectionName(this.value)">
+        <button class="delete-button" section-title="Новая секция" board-id="${board_id}" onclick="deleteSection(this)">⨯</button>
     `;
     sectionsList.appendChild(sectionItem);
     
-    saveBoardsToStorage();
+    const view = document.querySelector('#board-page .page-content');
+    const newSection = document.createElement('div');
+    newSection.className = 'board-section';
+    newSection.innerHTML = `
+        <div class="section-title-with-button">
+            <h3 class="section-title" section-name="Новая секция">Новая секция</h3>
+            <button class="add-task-button">
+                <img src="img/plus2.png" alt="Добавить" class="icon">
+            </button>
+        </div>
+        <div class="tasks-container"></div>
+    `;
+    view.appendChild(newSection);
+    console.log(view)
 }
 
 async function updateSectionName(obj, newTitleSection) {
