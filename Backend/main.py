@@ -124,10 +124,10 @@ def get_all_sections_board(board_id: str):
 @app.post("/api/boards/{board_id}/sections")
 def create_section(board_id: str, section_data: SectionCreate):
     """Создать секцию и связать ее с доской"""
-    success = base.create_section(board_id, section_data.title)
+    success, message = base.create_section(board_id, section_data.title)
     if not success:
-        raise HTTPException(status_code=400, detail="Failed to create section")
-    return {"message": "Section created successfully"}
+        raise HTTPException(status_code=400, detail=message)
+    return {"message": message}
 
 @app.put("/api/boards/{board_id}/sections/{old_title}")
 def update_section(board_id: str, old_title : str, section_data: SectionCreate):

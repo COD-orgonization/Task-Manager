@@ -10,12 +10,12 @@ class DataBase:
         
         # Создаем директорию если не существует
         os.makedirs(os.path.dirname(db_path), exist_ok=True)
-        
-        # Включение поддержки внешних ключей
-        self.cursor.execute("PRAGMA foreign_keys = ON")
 
         self.connection = sqlite3.connect(db_path, check_same_thread=False)
         self.cursor = self.connection.cursor()
+
+        # Включение поддержки внешних ключей
+        self.cursor.execute("PRAGMA foreign_keys = ON")
         
         self._check_and_create_tables()
 
@@ -264,9 +264,18 @@ class DataBase:
         except sqlite3.Error:
             return []
 
-    def create_section(self, board_id: str, title: str) -> bool:
+    def create_section(self, board_id: str, title: str) -> tuple[bool, str]:
         """Создать секцию и связать ее с доской"""
         try:
+            # Проверяем, существует ли уже такая связь секции с доской
+            self.cursor.execute('''
+                SELECT 1 FROM SectionBoards 
+                WHERE sectionTitle = ? AND idBoard = ?
+            ''', (title, board_id))
+            
+            if self.cursor.fetchone():
+                return False, "Section already exists for this board"
+            
             # Сначала добавляем секцию в таблицу Sections, если ее еще нет
             self.cursor.execute('''
                 INSERT OR IGNORE INTO Sections (title) VALUES (?)
@@ -278,10 +287,10 @@ class DataBase:
             ''', (title, board_id))
             
             self.connection.commit()
-            return True
-        except sqlite3.Error:
+            return True, "Section created successfully"
+        except sqlite3.Error as e:
             self.connection.rollback()
-            return False
+            return False, f"Database error: {str(e)}"
 
     def update_section(self, board_id: str, oldTitle: str, newTitle: str) -> bool:
         """Обновить название секции на доске"""
@@ -503,16 +512,19 @@ if __name__ == "__main__":
         base.create_section(board1_id, "todo")
         base.create_section(board1_id, "in-progress")
         base.create_section(board1_id, "done")
+
+        base.create_section(board1_id, "todo")
         
         # Получение секций доски
         sections = base.get_all_sections_board(board1_id)
         print(f"Board sections: {sections}")
         
         # Обновление секции
-        base.update_section(board1_id, "todo", "backlog")
+        base.create_section(board2_id, "todo")
+        base.update_section(board2_id, "todo", "backlog")
         
         # Получение обновленных секций
-        sections_updated = base.get_all_sections_board(board1_id)
+        sections_updated = base.get_all_sections_board(board2_id)
         print(f"Updated board sections: {sections_updated}")
     
     # Получение досок пользователя
@@ -524,6 +536,9 @@ if __name__ == "__main__":
     
     # Тестирование удаления секции
     if board2_id:
+        print(base.get_all_sections_board(board2_id))
         base.create_section(board2_id, "test-section")
-        base.delete_section("test-section")
+        print(base.get_all_sections_board(board2_id))
+        base.delete_section_from_board(board2_id, "test-section")
         print("Section deletion tested")
+        print(base.get_all_sections_board(board2_id))
