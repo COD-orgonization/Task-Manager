@@ -282,27 +282,27 @@ function loadBoardSettings(board, sections) {
         sectionItem.className = 'section-item';
         sectionItem.innerHTML = `
             <input type="text" class="section-input" section-old="${section}" board-id="${board.id}" value="${section}" onchange="updateSectionName(this, this.value)">
-            <button class="delete-button" onclick="deleteSection(this, ${section})">⨯</button>
+            <button class="delete-button" section-title="${section}" board-id="${board.id}" onclick="deleteSection(this)">⨯</button>
         `;
         sectionsList.appendChild(sectionItem);
     });
 }
 
-function saveBoardSettings() {
-    const board = boards.find(b => b.id === currentBoardId);
-    if (!board) return;
+// function saveBoardSettings() {
+//     const board = boards.find(b => b.id === currentBoardId);
+//     if (!board) return;
     
-    // Сохраняем основные настройки
-    const settingsInputs = document.querySelectorAll('#settings-page .form-input, #settings-page .form-textarea');
-    board.name = settingsInputs[0].value.trim();
-    board.description = settingsInputs[1].value.trim();
+//     // Сохраняем основные настройки
+//     const settingsInputs = document.querySelectorAll('#settings-page .form-input, #settings-page .form-textarea');
+//     board.name = settingsInputs[0].value.trim();
+//     board.description = settingsInputs[1].value.trim();
     
-    // Обновляем заголовок на странице доски
-    document.querySelector('#board-page h1').textContent = board.name;
+//     // Обновляем заголовок на странице доски
+//     document.querySelector('#board-page h1').textContent = board.name;
     
-    saveBoardsToStorage();
-    showPage('board-page');
-}
+//     saveBoardsToStorage();
+//     showPage('board-page');
+// }
 
 function addNewSection() {
     const board = boards.find(b => b.id === currentBoardId);
@@ -342,33 +342,21 @@ async function updateSectionName(obj, newTitleSection) {
         body: JSON.stringify({title: newTitleSection})
     });
 
-    const sectionTitle = document.querySelector(`[section-name="${oldTitleSection}"]`).textContent = newTitleSection;
-    // if (section) {
-    //     section.name = newName.trim();
-    //     saveBoardsToStorage();
-        
-    //     // Обновляем на странице доски
-    //     const sectionTitle = document.querySelector(`[section-name="${sectionId}"]`).closest('.board-section').querySelector('.section-title');
-    //     if (sectionTitle) {
-    //         sectionTitle.textContent = newName;
-    //     }
-    // }
+    document.querySelector(`[section-name="${oldTitleSection}"]`).textContent = newTitleSection;
 }
 
-function deleteSection(button) {
-    const board = boards.find(b => b.id === currentBoardId);
-    
-    // Не позволяем удалить последний раздел
-    if (board.sections.length <= 1) {
-        alert('Нельзя удалить последний раздел');
-        return;
-    }
-    
-    // Удаляем из данных
-    board.sections = board.sections.filter(s => s.id !== sectionId);
+async function deleteSection(button) {
+    const boardID = button.getAttribute('board-id');
+    const section = button.getAttribute('section-title');
+
+    await fetch(`${API_BASE_URL}/board/${boardID}/sections/${section}`, {
+        method: 'DELETE',
+        headers: {
+            "Content-type": "application/json"
+        }
+    });
     
     // Удаляем из UI
+    document.querySelector(`[section-name="${section}"]`).closest('.board-section').remove();
     button.closest('.section-item').remove();
-    
-    saveBoardsToStorage();
 }
