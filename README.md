@@ -3,7 +3,8 @@
 ## Используемые технологии
 - LiveSQL
 - FastAPI
-- unicorn - локальный сервер (библиотека python)
+- pydantic
+- uvicorn - локальный сервер (библиотека python)
 - HTML/CSS/JS
 - Python
 
