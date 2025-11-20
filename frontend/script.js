@@ -150,7 +150,7 @@ async function openBoard(boardId, boardTitle) {
             pageContent.appendChild(section);
         });
 
-        //loadBoardSettings(board)
+        loadBoardSettings(board, sections)
         showPage('board-page');
     } catch (error) {
         console.error('Ошибка при загрузке задач:', error);
@@ -163,7 +163,7 @@ function createBoardSection(status, tasks, board_id) {
     section.className = 'board-section';
     
     var str = `<div class="section-title-with-button">
-            <h3 class="section-title">${status}</h3>
+            <h3 class="section-title" section-name="${status}">${status}</h3>
             <button class="add-task-button">
                 <img src="img/plus2.png" alt="Добавить" class="icon">
             </button>
@@ -265,7 +265,7 @@ async function saveTask(input) {
 
 
 // Функции для настроек доски
-function loadBoardSettings(board) {
+function loadBoardSettings(board, sections) {
     if (!board) return;
     
     // Загружаем основные настройки
@@ -277,12 +277,11 @@ function loadBoardSettings(board) {
     const sectionsList = document.getElementById('sections-list');
     sectionsList.innerHTML = '';
     
-    const sections = JSON.parse(board.section);
     sections.forEach(section => {
         const sectionItem = document.createElement('li');
         sectionItem.className = 'section-item';
         sectionItem.innerHTML = `
-            <input type="text" class="section-input" value="${section}" onchange="updateSectionName(${section}, this.value)">
+            <input type="text" class="section-input" section-old="${section}" board-id="${board.id}" value="${section}" onchange="updateSectionName(this, this.value)">
             <button class="delete-button" onclick="deleteSection(this, ${section})">⨯</button>
         `;
         sectionsList.appendChild(sectionItem);
@@ -331,20 +330,29 @@ function addNewSection() {
     saveBoardsToStorage();
 }
 
-function updateSectionName(sectionId, newName) {
-    const board = boards.find(b => b.id === currentBoardId);
-    const section = board.sections.find(s => s.id === sectionId);
+async function updateSectionName(obj, newTitleSection) {
+    const boardID = obj.getAttribute('board-id');
+    const oldTitleSection = obj.getAttribute('section-old');
     
-    if (section) {
-        section.name = newName.trim();
-        saveBoardsToStorage();
+    await fetch(`${API_BASE_URL}/board/${boardID}/sections/${oldTitleSection}`, {
+        method: 'PUT',
+        headers: {
+            "Content-type": "application/json-patch+json"
+        },
+        body: JSON.stringify({title: newTitleSection})
+    });
+
+    const sectionTitle = document.querySelector(`[section-name="${oldTitleSection}"]`).textContent = newTitleSection;
+    // if (section) {
+    //     section.name = newName.trim();
+    //     saveBoardsToStorage();
         
-        // Обновляем на странице доски
-        const sectionTitle = document.querySelector(`[data-section-id="${sectionId}"]`).closest('.board-section').querySelector('.section-title');
-        if (sectionTitle) {
-            sectionTitle.textContent = newName;
-        }
-    }
+    //     // Обновляем на странице доски
+    //     const sectionTitle = document.querySelector(`[section-name="${sectionId}"]`).closest('.board-section').querySelector('.section-title');
+    //     if (sectionTitle) {
+    //         sectionTitle.textContent = newName;
+    //     }
+    // }
 }
 
 function deleteSection(button) {

@@ -261,7 +261,7 @@ def remove_executor_from_task(task_id: str):
 
 # ==================== Корневой эндпоинт ====================
 
-@app.get("/")
+@app.get("/api")
 def root():
     """Корневой эндпоинт с информацией о API"""
     return {
