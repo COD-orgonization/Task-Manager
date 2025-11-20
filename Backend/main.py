@@ -100,8 +100,7 @@ def get_all_boards_user(user_id: str):
             {
                 "id": board[0],
                 "title": board[1],
-                "description": board[2],
-                "section": board[3]
+                "description": board[2]
             }
             for board in boards
         ]
@@ -113,15 +112,15 @@ def get_users_count_on_board(board_id: str):
     return {"board_id": board_id, "users_count": count}
 
 # ==================== Секции ====================
-@app.get("/api/boards/{board_id}/sections")
+@app.get("/api/board/{board_id}/sections")
 def get_all_sections_board(board_id: str):
     """Получить все секции для указанной доски"""
     sections = base.get_all_sections_board(board_id)
     return {
-        "sections": [section[0] for section in sections]
+        "data": [section[0] for section in sections]
     }
 
-@app.post("/api/boards/{board_id}/sections")
+@app.post("/api/board/{board_id}/sections")
 def create_section(board_id: str, section_data: SectionCreate):
     """Создать секцию и связать ее с доской"""
     success, message = base.create_section(board_id, section_data.title)
@@ -129,7 +128,7 @@ def create_section(board_id: str, section_data: SectionCreate):
         raise HTTPException(status_code=400, detail=message)
     return {"message": message}
 
-@app.put("/api/boards/{board_id}/sections/{old_title}")
+@app.put("/api/board/{board_id}/sections/{old_title}")
 def update_section(board_id: str, old_title : str, section_data: SectionCreate):
     """Обновить название секции на доске"""
     success = base.update_section(board_id, old_title, section_data.title)
@@ -137,7 +136,7 @@ def update_section(board_id: str, old_title : str, section_data: SectionCreate):
         raise HTTPException(status_code=400, detail="Failed to update section")
     return {"message": "Section updated successfully"}
 
-@app.delete("/api/boards/{board_id}/sections/{section_title}")
+@app.delete("/api/board/{board_id}/sections/{section_title}")
 def delete_section_from_board(board_id: str, section_title: str):
     """Удалить секцию с конкретной доски"""
     success = base.delete_section_from_board(board_id, section_title)

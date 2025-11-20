@@ -120,16 +120,20 @@ async function openBoard(boardId, boardTitle) {
     
     try {
         const board = boards.find(b => b.id === boardId);
-        const response = await fetch(`${API_BASE_URL}/board/${boardId}`);
-        const data = await response.json();
+        const responseTask = await fetch(`${API_BASE_URL}/board/${boardId}`);
+        let data = await responseTask.json();
         const tasks = data.data;
+        console.log(tasks)
+
+        const responseSection = await await fetch(`${API_BASE_URL}/board/${boardId}/sections`);
+        data = await responseSection.json();
+        const sections = data.data;
         
         // Обновляем заголовок страницы доски
         document.querySelector('#board-page h1').textContent = boardTitle;
         
         // Очищаем контейнер разделов
         const pageContent = document.querySelector('#board-page .page-content');
-        const sections = JSON.parse(board.section);
         pageContent.innerHTML = '';
         
         // Группируем задачи по статусам
@@ -146,7 +150,7 @@ async function openBoard(boardId, boardTitle) {
             pageContent.appendChild(section);
         });
 
-        loadBoardSettings(board)
+        //loadBoardSettings(board)
         showPage('board-page');
     } catch (error) {
         console.error('Ошибка при загрузке задач:', error);

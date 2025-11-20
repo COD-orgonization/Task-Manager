@@ -505,15 +505,16 @@ if __name__ == "__main__":
         # Проверяем чтобы не было дубликатов
         base.add_user_to_board("1", board1_id) 
         
-        # Создание задачи
-        task_id = base.create_task(board1_id, "Implement feature", "Create new functionality", "in-progress")
-        
         # Тестирование работы с секциями
         base.create_section(board1_id, "todo")
         base.create_section(board1_id, "in-progress")
         base.create_section(board1_id, "done")
 
         base.create_section(board1_id, "todo")
+
+                # Создание задачи
+        task_id = base.create_task(board1_id, "Implement feature", "Create new functionality", "in-progress")
+        print(f"Задачи ${board1_id}: ${base.get_all_tasks_from_board(board1_id)}")
         
         # Получение секций доски
         sections = base.get_all_sections_board(board1_id)
