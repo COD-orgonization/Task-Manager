@@ -78,6 +78,26 @@ def delete_board(board_id: str):
         raise HTTPException(status_code=404, detail="Board not found or deletion failed")
     return {"message": "Board deleted successfully"}
 
+@app.put("/api/boards/{board_id}")
+def update_board_title(board_id, board_data : UserCreate):
+    if "title" not in board_data:
+        raise HTTPException(status_code=400, detail="Title is required")
+    
+    success = base.update_board_title(board_id, board_data["title"])
+    if not success:
+        raise HTTPException(status_code=404, detail="Board not found")
+    return {"message": "Board title updated successfully"}
+
+@app.put("/api/boards/{board_id}")
+def update_board_description(board_id, board_data : UserCreate):
+    if "description" not in board_data:
+        raise HTTPException(status_code=400, detail="Description is required")
+    
+    success = base.update_board_title(board_id, board_data["description"])
+    if not success:
+        raise HTTPException(status_code=404, detail="Board not found")
+    return {"message": "bOARD description updated successfully"}
+
 @app.post("/api/boards/{board_id}/add/user/{user_id}")
 def add_user_to_board(board_id: str, user_id: str):
     success = base.add_user_to_board(user_id, board_id)

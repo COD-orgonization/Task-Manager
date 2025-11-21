@@ -184,6 +184,28 @@ class DataBase:
             self.connection.rollback()
             return False
 
+    def update_board_title(self, board_id, new_title) -> bool:
+        try:
+            self.cursor.execute('''
+                UPDATE Boards SET title = ? WHERE id = ?
+            ''', (new_title, board_id))
+            self.connection.commit()
+            return True
+        except sqlite3.Error:
+            self.connection.rollback()
+            return False
+
+    def update_board_discription(self, board_id, new_discription) -> bool:
+        try:
+            self.cursor.execute('''
+                UPDATE Tasks SET description = ? WHERE id = ?
+            ''', (new_discription, board_id))
+            self.connection.commit()
+            return True
+        except sqlite3.Error:
+            self.connection.rollback()
+            return False
+
     def add_user_to_board(self, user_id: str, board_id: str) -> bool:
         try:
             # Проверяем, не прикреплен ли уже пользователь к доске
