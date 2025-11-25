@@ -32,7 +32,6 @@ async function loadUserBoards() {
         let data = await response.json();
 
         boards = data.data || [];
-        console.log(data)
 
         updateBoardsList();
     } catch (error) {
@@ -123,12 +122,10 @@ async function openBoard(boardId, boardTitle) {
         const responseTask = await fetch(`${API_BASE_URL}/board/${boardId}`);
         let data = await responseTask.json();
         const tasks = data.data;
-        console.log(tasks)
 
         const responseSection = await await fetch(`${API_BASE_URL}/board/${boardId}/sections`);
         data = await responseSection.json();
         const sections = data.data;
-        console.log(sections)
         
         // Обновляем заголовок страницы доски
         document.querySelector('#board-page h1').textContent = boardTitle;
@@ -222,7 +219,6 @@ async function addTask(button, status, board_id) {
     });
     const data = await response.json();
     newTask['id'] = data.task_id;
-    console.log(newTask)
 
     const taskElement = document.createElement('div');
     taskElement.className = 'task-item';
