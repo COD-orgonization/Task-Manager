@@ -277,8 +277,8 @@ function loadBoardSettings(board, sections) {
     settingsInputs[0].setAttribute('oldData', board.title);
     settingsInputs[1].setAttribute('OldData', board.description);
 
-    settingsInputs[0].addEventListener('blur', ()=>{updateTitle(settingsInputs[0].value, board.id)});
-    settingsInputs[1].addEventListener('blur', ()=>{updateDiscription(settingsInputs[1].value, board.id)});
+    settingsInputs[0].addEventListener('blur', ()=>{updateTitle(settingsInputs[0], settingsInputs[0].value, board.id)});
+    settingsInputs[1].addEventListener('blur', ()=>{updateDiscription(settingsInputs[1], settingsInputs[1].value, board.id)});
     
     // Загружаем разделы
     const sectionsList = document.getElementById('sections-list');
@@ -299,26 +299,50 @@ function loadBoardSettings(board, sections) {
     document.querySelector('.add-section-button').addEventListener('click', () => {addNewSection(board.id, sections)});
 }
 
-async function updateTitle(text, board_id){
-    await fetch(`${API_BASE_URL}/boards/${board_id}/title`, {
-        method: 'PATCH',
-        headers: {
-            "Content-type": "application/json-patch+json"
-        },
-        body: JSON.stringify({title: text})
-    });
+async function updateTitle(obj, text, board_id){
+    const oldTitle = obj.getAttribute('oldData')
+    let flag = true;
 
-    console.log(document.querySelector(`#home-page`).children[0].children[1].textContent)
+    if(text == "" || text == oldTitle){
+        obj.value = oldTitle; 
+        flag = false;
+    }
+
+    if(flag){
+        await fetch(`${API_BASE_URL}/boards/${board_id}/title`, {
+            method: 'PATCH',
+            headers: {
+                "Content-type": "application/json-patch+json"
+            },
+            body: JSON.stringify({title: text})
+        });
+
+        boards.find(obj => obj.id == board_id).title = text;
+        updateBoardsList();
+    }
 }
 
-async function updateDiscription(text, board_id){
-    await fetch(`${API_BASE_URL}/boards/${board_id}/discription`, {
-        method: 'PATCH',
-        headers: {
-            "Content-type": "application/json-patch+json"
-        },
-        body: JSON.stringify({description: text})
-    });
+async function updateDiscription(obj, text, board_id){
+    const oldDiscription = obj.getAttribute('oldData')
+    let flag = true;
+
+    if(text == "" || text == oldDiscription){
+        obj.value = oldDiscription; 
+        flag = false;
+    }
+
+    if(flag){
+        await fetch(`${API_BASE_URL}/boards/${board_id}/discription`, {
+            method: 'PATCH',
+            headers: {
+                "Content-type": "application/json-patch+json"
+            },
+            body: JSON.stringify({description: text})
+        });
+
+        boards.find(obj => obj.id == board_id).description = text;
+        updateBoardsList();
+    }
 }
 
 async function addNewSection(board_id, sections) {
