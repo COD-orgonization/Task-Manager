@@ -273,6 +273,12 @@ function loadBoardSettings(board, sections) {
     const settingsInputs = document.querySelectorAll('#settings-page .form-input, #settings-page .form-textarea');
     settingsInputs[0].value = board.title;
     settingsInputs[1].value = board.description;
+
+    settingsInputs[0].setAttribute('oldData', board.title);
+    settingsInputs[1].setAttribute('OldData', board.description);
+
+    settingsInputs[0].addEventListener('blur', ()=>{updateTitle(settingsInputs[0].value, board.id)});
+    settingsInputs[1].addEventListener('blur', ()=>{updateDiscription(settingsInputs[1].value, board.id)});
     
     // Загружаем разделы
     const sectionsList = document.getElementById('sections-list');
@@ -282,47 +288,65 @@ function loadBoardSettings(board, sections) {
         const sectionItem = document.createElement('li');
         sectionItem.className = 'section-item';
         sectionItem.innerHTML = `
-            <input type="text" class="section-input" section-old="${section}" board-id="${board.id}" value="${section}" onchange="updateSectionName(this, this.value)">
+            <input type="text" class="section-input" section-old="${section}" board-id="${board.id}" value="${section}">
             <button class="delete-button" section-title="${section}" board-id="${board.id}" onclick="deleteSection(this)">⨯</button>
         `;
+        const input = sectionItem.querySelector(".section-input");
+        input.addEventListener("blur", () => {updateSectionName(input, input.value)})
         sectionsList.appendChild(sectionItem);
     });
 
-    document.querySelector('.add-section-button').addEventListener('click', () => {addNewSection(board.id)});
+    document.querySelector('.add-section-button').addEventListener('click', () => {addNewSection(board.id, sections)});
 }
 
-// function saveBoardSettings() {
-//     const board = boards.find(b => b.id === currentBoardId);
-//     if (!board) return;
-    
-//     // Сохраняем основные настройки
-//     const settingsInputs = document.querySelectorAll('#settings-page .form-input, #settings-page .form-textarea');
-//     board.name = settingsInputs[0].value.trim();
-//     board.description = settingsInputs[1].value.trim();
-    
-//     // Обновляем заголовок на странице доски
-//     document.querySelector('#board-page h1').textContent = board.name;
-    
-//     saveBoardsToStorage();
-//     showPage('board-page');
-// }
+async function updateTitle(text, board_id){
+    await fetch(`${API_BASE_URL}/boards/${board_id}/title`, {
+        method: 'PATCH',
+        headers: {
+            "Content-type": "application/json-patch+json"
+        },
+        body: JSON.stringify({title: text})
+    });
 
-async function addNewSection(board_id) {
+    console.log(document.querySelector(`#home-page`).children[0].children[1].textContent)
+}
+
+async function updateDiscription(text, board_id){
+    await fetch(`${API_BASE_URL}/boards/${board_id}/discription`, {
+        method: 'PATCH',
+        headers: {
+            "Content-type": "application/json-patch+json"
+        },
+        body: JSON.stringify({description: text})
+    });
+}
+
+async function addNewSection(board_id, sections) {
+    const nameNewSection = "Новая секция";
+    let tmpNameSection = nameNewSection;
+    let copies = 1;
+    while(sections.find(n => n == tmpNameSection)){
+        tmpNameSection = nameNewSection + " " + copies;
+        copies++;
+    }
+
     await fetch(`${API_BASE_URL}/board/${board_id}/sections`, {
         method: 'POST',
         headers: {
             "Content-type": "application/json"
         },
-        body: JSON.stringify({title: "Новая секция"})
+        body: JSON.stringify({title: tmpNameSection})
     });
+
+    sections.push(tmpNameSection)
     
-    // // Добавляем в UI
+    // Добавляем в UI
     const sectionsList = document.getElementById('sections-list');
     const sectionItem = document.createElement('li');
     sectionItem.className = 'section-item';
     sectionItem.innerHTML = `
-        <input type="text" class="section-input" section-old="Новая секция" board-id="${board_id}" value="Новая секция" onchange="updateSectionName(this.value)">
-        <button class="delete-button" section-title="Новая секция" board-id="${board_id}" onclick="deleteSection(this)">⨯</button>
+        <input type="text" class="section-input" section-old="${tmpNameSection}" board-id="${board_id}" value="${tmpNameSection}" onchange="updateSectionName(this.value)">
+        <button class="delete-button" section-title="${tmpNameSection}" board-id="${board_id}" onclick="deleteSection(this)">⨯</button>
     `;
     sectionsList.appendChild(sectionItem);
     
@@ -331,7 +355,7 @@ async function addNewSection(board_id) {
     newSection.className = 'board-section';
     newSection.innerHTML = `
         <div class="section-title-with-button">
-            <h3 class="section-title" section-name="Новая секция">Новая секция</h3>
+            <h3 class="section-title" section-name="${tmpNameSection}">${tmpNameSection}</h3>
             <button class="add-task-button">
                 <img src="img/plus2.png" alt="Добавить" class="icon">
             </button>
@@ -339,7 +363,6 @@ async function addNewSection(board_id) {
         <div class="tasks-container"></div>
     `;
     view.appendChild(newSection);
-    console.log(view)
 }
 
 async function updateSectionName(obj, newTitleSection) {
@@ -354,7 +377,7 @@ async function updateSectionName(obj, newTitleSection) {
         body: JSON.stringify({title: newTitleSection})
     });
 
-    document.querySelector(`[section-name="${oldTitleSection}"]`).textContent = newTitleSection;
+    document.querySelector(`#board-page [section-name="${oldTitleSection}"]`).textContent = newTitleSection;
 }
 
 async function deleteSection(button) {
@@ -369,6 +392,6 @@ async function deleteSection(button) {
     });
     
     // Удаляем из UI
-    document.querySelector(`[section-name="${section}"]`).closest('.board-section').remove();
+    document.querySelector(`#board-page [section-name="${section}"]`).closest('.board-section').remove();
     button.closest('.section-item').remove();
 }

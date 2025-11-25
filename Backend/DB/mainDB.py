@@ -198,7 +198,7 @@ class DataBase:
     def update_board_discription(self, board_id, new_discription) -> bool:
         try:
             self.cursor.execute('''
-                UPDATE Tasks SET description = ? WHERE id = ?
+                UPDATE Boards SET description = ? WHERE id = ?
             ''', (new_discription, board_id))
             self.connection.commit()
             return True
