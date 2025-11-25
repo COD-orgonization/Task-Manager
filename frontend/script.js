@@ -292,7 +292,7 @@ function loadBoardSettings(board, sections) {
             <button class="delete-button" section-title="${section}" board-id="${board.id}" onclick="deleteSection(this)">⨯</button>
         `;
         const input = sectionItem.querySelector(".section-input");
-        input.addEventListener("blur", () => {updateSectionName(input, input.value)})
+        input.addEventListener("blur", () => {updateSectionName(input, input.value, sections)})
         sectionsList.appendChild(sectionItem);
     });
 
@@ -369,9 +369,11 @@ async function addNewSection(board_id, sections) {
     const sectionItem = document.createElement('li');
     sectionItem.className = 'section-item';
     sectionItem.innerHTML = `
-        <input type="text" class="section-input" section-old="${tmpNameSection}" board-id="${board_id}" value="${tmpNameSection}" onchange="updateSectionName(this.value)">
+        <input type="text" class="section-input" section-old="${tmpNameSection}" board-id="${board_id}" value="${tmpNameSection}">
         <button class="delete-button" section-title="${tmpNameSection}" board-id="${board_id}" onclick="deleteSection(this)">⨯</button>
     `;
+    const item = sectionItem.children[0];
+    item.addEventListener("blur", () => {updateSectionName(item, item.value, sections)});
     sectionsList.appendChild(sectionItem);
     
     const view = document.querySelector('#board-page .page-content');
@@ -389,19 +391,39 @@ async function addNewSection(board_id, sections) {
     view.appendChild(newSection);
 }
 
-async function updateSectionName(obj, newTitleSection) {
+async function updateSectionName(obj, newTitleSection, sections) {
     const boardID = obj.getAttribute('board-id');
     const oldTitleSection = obj.getAttribute('section-old');
-    
-    await fetch(`${API_BASE_URL}/board/${boardID}/sections/${oldTitleSection}`, {
-        method: 'PUT',
-        headers: {
-            "Content-type": "application/json-patch+json"
-        },
-        body: JSON.stringify({title: newTitleSection})
-    });
+    let flag = true;
 
-    document.querySelector(`#board-page [section-name="${oldTitleSection}"]`).textContent = newTitleSection;
+    if(newTitleSection == ""){
+        flag = false;
+        obj.value = oldTitleSection;
+    }
+
+    let tmpNameSection = newTitleSection;
+    let copies = 1;
+    while(sections.find(n => n == tmpNameSection && n != oldTitleSection)){
+        tmpNameSection = newTitleSection + " " + copies;
+        copies++;
+    }
+    newTitleSection = tmpNameSection;
+
+    if(flag){
+        await fetch(`${API_BASE_URL}/board/${boardID}/sections/${oldTitleSection}`, {
+            method: 'PUT',
+            headers: {
+                "Content-type": "application/json-patch+json"
+            },
+            body: JSON.stringify({title: newTitleSection})
+        });
+
+        sections[sections.indexOf(oldTitleSection)] = newTitleSection;
+        obj.value = newTitleSection;
+        obj.setAttribute('section-old', newTitleSection)
+        document.querySelector(`#board-page [section-name="${oldTitleSection}"]`).textContent = newTitleSection;
+        document.querySelector(`#board-page [section-name="${oldTitleSection}"]`).setAttribute('section-name', newTitleSection);
+    }
 }
 
 async function deleteSection(button) {
