@@ -97,12 +97,7 @@ async function createNewBoard() {
 
     const data = await response.json();
 
-    newBoard = {
-        id : data.board_id,
-        title: name,
-        description: description,
-        sections: NaN
-    };
+    newBoard[id] = data.board_id;
     
     boards.push(newBoard);
     updateBoardsList();
@@ -162,7 +157,7 @@ function createBoardSection(status, tasks) {
     
     var str = `<div class="section-title-with-button">
             <h3 class="section-title" section-name="${status}">${status}</h3>
-            <button class="add-task-button">
+            <button class="add-task-button" section-name="${status}" onclick="addTask(this)">
                 <img src="img/plus2.png" alt="Добавить" class="icon">
             </button>
         </div>
@@ -171,25 +166,14 @@ function createBoardSection(status, tasks) {
     for(task in tasks){
         str += `${tasks.map(task => 
                 `<div class="task-item" dataTaskId="${task.id}">
-                    <input type="text" class="task-input" value="${task.title}">
-                    <button class="delete-task-button">⨯</button>
+                    <input type="text" class="task-input" in-status="${status}" value="${task.title}">
+                    <button class="delete-task-button" onclick="deleteTask(this)">⨯</button>
                 </div>
             `).join('')}`
     }
     str += "</div>"
 
     section.innerHTML = str;
-    
-    const addButton = section.querySelector('.add-task-button');
-    addButton.addEventListener('click', function() {
-        addTask(this, status);
-    });
-
-    section.querySelectorAll('.delete-task-button').forEach(button => {
-        button.addEventListener('click', function() {
-            deleteTask(this);
-        });
-    });
 
     section.querySelectorAll('.task-input').forEach(input => {
         input.addEventListener('blur', function() {
@@ -201,7 +185,8 @@ function createBoardSection(status, tasks) {
 }
 
 // Функции для работы с задачами
-async function addTask(button, status) {
+async function addTask(button) {
+    const status = button.getAttribute('section-name');
     const tasksContainer = button.closest('.board-section').querySelector('.tasks-container');
 
     const newTask = {
@@ -378,7 +363,7 @@ async function addNewSection(sections) {
     newSection.innerHTML = `
         <div class="section-title-with-button">
             <h3 class="section-title" section-name="${tmpNameSection}">${tmpNameSection}</h3>
-            <button class="add-task-button">
+            <button class="add-task-button" section-name="${tmpNameSection}" onclick="addTask(this)">
                 <img src="img/plus2.png" alt="Добавить" class="icon">
             </button>
         </div>
