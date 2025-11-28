@@ -156,7 +156,7 @@ async function openBoard(boardId, boardTitle) {
 }
 
 // Функция создания раздела доски с задачами
-function createBoardSection(status, tasks, board_id) {
+function createBoardSection(status, tasks) {
     const section = document.createElement('div');
     section.className = 'board-section';
     
@@ -182,7 +182,7 @@ function createBoardSection(status, tasks, board_id) {
     
     const addButton = section.querySelector('.add-task-button');
     addButton.addEventListener('click', function() {
-        addTask(this, status, board_id);
+        addTask(this, status);
     });
 
     section.querySelectorAll('.delete-task-button').forEach(button => {
@@ -201,7 +201,7 @@ function createBoardSection(status, tasks, board_id) {
 }
 
 // Функции для работы с задачами
-async function addTask(button, status, board_id) {
+async function addTask(button, status) {
     const tasksContainer = button.closest('.board-section').querySelector('.tasks-container');
 
     const newTask = {
@@ -210,7 +210,7 @@ async function addTask(button, status, board_id) {
         status: status 
     }
 
-    const response = await fetch(`${API_BASE_URL}/boards/${board_id}/task`, {
+    const response = await fetch(`${API_BASE_URL}/boards/${currentBoardId}/task`, {
         method: 'POST',
         headers: {
             "Content-type": "application/json"
@@ -273,8 +273,8 @@ function loadBoardSettings(board, sections) {
     settingsInputs[0].setAttribute('oldData', board.title);
     settingsInputs[1].setAttribute('OldData', board.description);
 
-    settingsInputs[0].addEventListener('blur', ()=>{updateTitle(settingsInputs[0], settingsInputs[0].value, board.id)});
-    settingsInputs[1].addEventListener('blur', ()=>{updateDiscription(settingsInputs[1], settingsInputs[1].value, board.id)});
+    settingsInputs[0].addEventListener('blur', ()=>{updateTitle(settingsInputs[0], settingsInputs[0].value)});
+    settingsInputs[1].addEventListener('blur', ()=>{updateDiscription(settingsInputs[1], settingsInputs[1].value)});
     
     // Загружаем разделы
     const sectionsList = document.getElementById('sections-list');
@@ -284,18 +284,18 @@ function loadBoardSettings(board, sections) {
         const sectionItem = document.createElement('li');
         sectionItem.className = 'section-item';
         sectionItem.innerHTML = `
-            <input type="text" class="section-input" section-old="${section}" board-id="${board.id}" value="${section}">
-            <button class="delete-button" section-title="${section}" board-id="${board.id}" onclick="deleteSection(this)">⨯</button>
+            <input type="text" class="section-input" section-old="${section}" value="${section}">
+            <button class="delete-button" section-title="${section}" onclick="deleteSection(this)">⨯</button>
         `;
         const input = sectionItem.querySelector(".section-input");
         input.addEventListener("blur", () => {updateSectionName(input, input.value, sections)})
         sectionsList.appendChild(sectionItem);
     });
 
-    document.querySelector('.add-section-button').addEventListener('click', () => {addNewSection(board.id, sections)});
+    document.querySelector('.add-section-button').addEventListener('click', () => {addNewSection(sections)});
 }
 
-async function updateTitle(obj, text, board_id){
+async function updateTitle(obj, text){
     const oldTitle = obj.getAttribute('oldData')
     let flag = true;
 
@@ -305,7 +305,7 @@ async function updateTitle(obj, text, board_id){
     }
 
     if(flag){
-        await fetch(`${API_BASE_URL}/boards/${board_id}/title`, {
+        await fetch(`${API_BASE_URL}/boards/${currentBoardId}/title`, {
             method: 'PATCH',
             headers: {
                 "Content-type": "application/json-patch+json"
@@ -313,12 +313,12 @@ async function updateTitle(obj, text, board_id){
             body: JSON.stringify({title: text})
         });
 
-        boards.find(obj => obj.id == board_id).title = text;
+        boards.find(obj => obj.id == currentBoardId).title = text;
         updateBoardsList();
     }
 }
 
-async function updateDiscription(obj, text, board_id){
+async function updateDiscription(obj, text){
     const oldDiscription = obj.getAttribute('oldData')
     let flag = true;
 
@@ -328,7 +328,7 @@ async function updateDiscription(obj, text, board_id){
     }
 
     if(flag){
-        await fetch(`${API_BASE_URL}/boards/${board_id}/discription`, {
+        await fetch(`${API_BASE_URL}/boards/${currentBoardId}/discription`, {
             method: 'PATCH',
             headers: {
                 "Content-type": "application/json-patch+json"
@@ -336,12 +336,12 @@ async function updateDiscription(obj, text, board_id){
             body: JSON.stringify({description: text})
         });
 
-        boards.find(obj => obj.id == board_id).description = text;
+        boards.find(obj => obj.id == currentBoardId).description = text;
         updateBoardsList();
     }
 }
 
-async function addNewSection(board_id, sections) {
+async function addNewSection(sections) {
     const nameNewSection = "Новая секция";
     let tmpNameSection = nameNewSection;
     let copies = 1;
@@ -350,7 +350,7 @@ async function addNewSection(board_id, sections) {
         copies++;
     }
 
-    await fetch(`${API_BASE_URL}/board/${board_id}/sections`, {
+    await fetch(`${API_BASE_URL}/board/${currentBoardId}/sections`, {
         method: 'POST',
         headers: {
             "Content-type": "application/json"
@@ -365,8 +365,8 @@ async function addNewSection(board_id, sections) {
     const sectionItem = document.createElement('li');
     sectionItem.className = 'section-item';
     sectionItem.innerHTML = `
-        <input type="text" class="section-input" section-old="${tmpNameSection}" board-id="${board_id}" value="${tmpNameSection}">
-        <button class="delete-button" section-title="${tmpNameSection}" board-id="${board_id}" onclick="deleteSection(this)">⨯</button>
+        <input type="text" class="section-input" section-old="${tmpNameSection}" value="${tmpNameSection}">
+        <button class="delete-button" section-title="${tmpNameSection}" onclick="deleteSection(this)">⨯</button>
     `;
     const item = sectionItem.children[0];
     item.addEventListener("blur", () => {updateSectionName(item, item.value, sections)});
@@ -388,7 +388,6 @@ async function addNewSection(board_id, sections) {
 }
 
 async function updateSectionName(obj, newTitleSection, sections) {
-    const boardID = obj.getAttribute('board-id');
     const oldTitleSection = obj.getAttribute('section-old');
     let flag = true;
 
@@ -406,7 +405,7 @@ async function updateSectionName(obj, newTitleSection, sections) {
     newTitleSection = tmpNameSection;
 
     if(flag){
-        await fetch(`${API_BASE_URL}/board/${boardID}/sections/${oldTitleSection}`, {
+        await fetch(`${API_BASE_URL}/board/${currentBoardId}/sections/${oldTitleSection}`, {
             method: 'PUT',
             headers: {
                 "Content-type": "application/json-patch+json"
@@ -423,10 +422,9 @@ async function updateSectionName(obj, newTitleSection, sections) {
 }
 
 async function deleteSection(button) {
-    const boardID = button.getAttribute('board-id');
     const section = button.getAttribute('section-title');
 
-    await fetch(`${API_BASE_URL}/board/${boardID}/sections/${section}`, {
+    await fetch(`${API_BASE_URL}/board/${currentBoardId}/sections/${section}`, {
         method: 'DELETE',
         headers: {
             "Content-type": "application/json"
